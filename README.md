@@ -1,2 +1,2 @@
 # Projects
-this is my project repository within my educational year as a computer science with specialism cybersecurity student
+These are my projects repository within my educational year as a computer science with specialism cybersecurity student
