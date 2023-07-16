@@ -1,0 +1,1422 @@
+#RICHARD RIZKY SUPERNOVA
+#TP062858
+
+DEFINE start_program()
+    DECLARE word as a string
+    word = "Welcome to myBank!"
+    CALL my_decoration_str((" " * 4) + word)
+    CALL account_id_validation()
+ENDDEFINE
+
+DEFINE my_decoration_str(string_to_wrap)
+    DECLARE (string: string_to_wrap)
+    print("=" * 26 + "\n" + string_to_wrap + "\n" + "=" *26)
+ENDDEFINE
+
+DEFINE account_id_validation()
+    DECLARE (string: account_id, account_id_rec, account_pass_rec, account_type_rec, line) (integer: checker) (list: acc_data, acc_line)
+    WHILE True
+        WITH OPEN "AccountData.txt" with read mode as account_list
+            acc_data = account_list.readlines()
+            DISPLAY ("Account ID: ")
+            READ account_id
+            SET checker = 0
+            LOOP line IN acc_data
+                acc_line = line.replace("\n",":").split(":")
+                IF account_id == acc_line[0] THEN
+                    SET checker = 1
+                    account_id_rec = acc_line[0]
+                    account_pass_rec = acc_line[1]
+                    account_type_rec = acc_line[2]
+                    CALL account_password_validation(account_pass_rec,account_type_rec, account_id_rec, acc_line)
+                    BREAK
+                ELSE
+                    PASS
+                ENDIF
+            ENDLOOP
+            IF checker == 1 THEN
+                BREAK
+            ELSE
+                DISPLAY ("You enter a wrong account ID! \n")
+                CALL my_decoration_str(" Please re-enter your ID!")
+            ENDIF
+        ENDWITH
+    ENDWHILE
+ENDDEFINE
+
+DEFINE account_password_validation(acc_password, acc_type, acc_id, acc_line)
+    DECLARE (string: account_pass, acc_password, acc_type, acc_id) (list: acc_line)
+    DISPLAY ("Password: ")
+    READ account_pass
+    IF account_pass == acc_password THEN
+        CALL account_type_checker(acc_type, acc_id, acc_line)
+    ELSE
+        DISPLAY ("Invalid Password! \n")
+        CALL my_decoration_str(" Please re-enter your ID!")
+        CALL account_id_validation()
+    ENDIF
+ENDDEFINE
+
+DEFINE account_type_checker(acc_type, acc_id, acc_line)
+    DECLARE (string: acc_type, acc_id) (list: acc_line)
+    IF acc_type == "super" THEN
+        DISPLAY ("Welcome back boss!")
+        CALL super_function(acc_id)
+    ELSEIF acc_type == "admin" THEN
+        DISPLAY ("Welcome back " + acc_line[3] + "!")
+        CALL admin_function(acc_type, acc_id)
+    ELSE
+        DISPLAY ("Welcome back " + acc_line[4] + "!")
+        CALL customer_function(acc_id)
+    ENDIF
+ENDDEFINE
+
+DEFINE super_function(id)
+    DECLARE (string: user_choice, type, id)
+    WHILE True
+        CALL super_acc_menu()
+        DISPLAY ("Select your option (1-6): ")
+        READ user_choice
+        IF user_choice == "1" THEN
+            SET type = 'super'
+            CALL create_account(type)
+        ELSEIF user_choice == "2" THEN
+            SET type = 'admin'
+            CALL create_account(type)
+        ELSEIF user_choice == "3" THEN
+            CALL edit_admin_account(id)
+        ELSEIF user_choice == "4" THEN
+            CALL account_finder()
+        ELSEIF user_choice == "5" THEN
+            CALL showing_customer_report()
+        ELSEIF user_choice == "6" THEN
+            DISPLAY ("\n*Thankyou for your visit*")
+            BREAK
+        ELSE
+            DISPLAY ("\nSorry, we dont have that option")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE edit_admin_account(id_super)
+    DECLARE (string: id, answer, id_super) (integer: index_of_line) (list: data_location)
+    id = admin_checker_to_edit()
+    WHILE True
+        data_location, index_of_line = admin_checker_updater(id)
+        DISPLAY ("\n" + (" " * 2) + "Edit Customer Account")
+        DISPLAY ("=" * 26)
+        DISPLAY (" Customer account details\n")
+        DISPLAY ('1. Name: ' + data_location[3] + '\n2. Email Address: ' + data_location[4] + '\n3. Address: ' + data_location[5] + '\n4.
+                 Phone Number: ' + data_location[6] + '\n5. Exit editing customer menu')
+        DISPLAY ("=" * 26)
+        answer = edit_admin_account_option_checker()
+        IF answer != "exit" THEN
+            CALL change_data_admin(data_location, index_of_line, answer, id_super, id)
+            DISPLAY (("\n" + "=" * 26) + "\n   **account updated!**\n" + ("=" * 26))
+        ELSE
+            BREAK
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE change_data_admin(data_location, index_of_line, answer, id_super, id_admin_to_change)
+    DECLARE (string: answer, id_super, id_admin_to_change, data_changed) (integer: index_of_line, checker) (list: data_location, list_of_lines)
+    WITH OPEN "AccountData.txt" with read mode as data_file
+        list_of_lines = data_file.readlines()
+        WHILE True
+            DISPLAY ("New data: ")
+            READ data_changed
+            data_changed = data_changed.strip()
+            IF answer == "email" THEN
+                checker = acc_email_address_checker(data_changed)
+                IF checker == 1 THEN
+                    DISPLAY new line
+                    CONTINUE
+                ELSE
+                    list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' data_location[2] + ':' + data_location[3] + ':' + data_changed + ':'
+                                                   + data_location[5] + ':' + data_location[6] + '\n'
+                    BREAK
+                ENDIF
+            ELSEIF answer == "address" THEN
+                checker = acc_address_checker(data_changed)
+                IF checker == 1 THEN
+                    DISPLAY new line
+                    CONTINUE
+                ELSE
+                    list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' data_location[2] + ':' + data_location[3] + ':' + data_location[4] + ':'
+                                                   + data_changed + ':' + data_location[6] + '\n'
+                    BREAK
+                ENDIF
+            ELSEIF answer == "phone number" THEN
+                checker = acc_phone_num_checker(data_changed)
+                IF checker == 1 THEN
+                    list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' data_location[2] + ':' + data_location[3] + ':' + data_location[4] + ':'
+                                                   + data_location[5] + ':' + data_changed + '\n'
+                    BREAK
+                ELSE
+                    DISPLAY new line
+                    CONTINUE
+                ENDIF
+            ENDIF
+        ENDWHILE
+        WITH OPEN "AccountData.txt" with write mode as f
+            WRITE list_of_lines into f
+        ENDWITH
+    ENDWITH
+ENDDEFINE
+
+DEFINE edit_admin_account_option_checker()
+    DECLARE (string: choice, answer)
+    WHILE True
+        DISPLAY ("Which one would you like to edit? (2-5): ")
+        READ choice
+        IF choice == "1" THEN
+            DISPLAY ("\nSorry, but editing name are not allowed!\n")
+            CONTINUE
+        ELSEIF choice == "2" THEN
+            answer = "email"
+        ELSEIF choice == "3" THEN
+            answer = "address"
+        ELSEIF choice == "4" THEN
+            answer = "phone number"
+        ELSEIF choice == "5" THEN
+            answer = "exit"
+        ELSE
+            DISPLAY ("\nSorry, we dont have that option\n")
+            CONTINUE
+        ENDIF
+        RETURN answer
+    ENDWHILE
+ENDDEFINE
+
+DEFINE admin_checker_updater(id)
+    DECLARE (integer: index_line, line) (list: acc_datas, acc_line, data_line_location)
+    WHILE True
+        WITH OPEN "AccountData.txt" with read mode as account_list
+            acc_datas = account_list.readlines()
+            SET index_line = -1
+            LOOP line IN acc_datas:
+                acc_line = line.replace("\n",":").split(":")
+                index_line += 1
+                IF id == acc_line[0] AND acc_line[2] == "admin" THEN
+                    data_line_location = acc_line
+                    RETURN data_line_location, index_line
+                ENDIF
+            ENDLOOP
+        ENDWITH
+    ENDWHILE
+ENDDEFINE
+
+DEFINE admin_checker_to_edit()
+    DECLARE (string: id, line) (integer: checker) (list: acc_datas, acc_line)
+    WHILE True
+        WITH OPEN "AccountData.txt" with read mode as account_list
+            acc_datas = account_list.readlines()
+            DISPLAY ("\nInput admin account id: ")
+            READ id
+            SET checker = 0
+            LOOP line IN acc_datas
+                acc_line = line.replace("\n",":").split(":")
+                IF id == acc_line[0] AND acc_line[2] == "admin" THEN
+                    SET checker = 1
+                    BREAK
+                ELSEIF id == acc_line[0] AND acc_line[2] != "admin" THEN
+                    SET checker = 2
+                ELSE
+                    PASS
+                ENDIF
+            ENDLOOP
+            IF checker == 1 THEN
+                RETURN id
+            ELSEIF checker == 2 THEN
+                DISPLAY ("\nYou INPUT a not admin ID, only allowed to edit admin account.")
+            ELSE
+                DISPLAY ("\nAccount's ID not found.")
+            ENDIF
+        ENDWITH
+    ENDWHILE
+ENDDEFINE
+
+DEFINE super_acc_menu()
+    DISPLAY ("\n" + (" " * 8) + "Super Menu")
+    DISPLAY ("=" * 26)
+    DISPLAY ("1. Create Admin Account")
+    DISPLAY ("2. Create Customer Account")
+    DISPLAY ("3. Edit Admin Account")
+    DISPLAY ("4. View Admin/Customer Account")
+    DISPLAY ("5. View Costumer's Report")
+    DISPLAY ("6. Exit")
+    DISPLAY ("=" * 26)
+    DISPLAY ("What do you want to do?")
+ENDDEFINE
+
+DEFINE account_finder()
+    DECLARE (string: account, next_option) (integer: checker) (list: data_file, each_line)
+    WHILE True
+        SET checker = 0
+        WITH OPEN "AccountData.txt" with read mode as data_file
+            data_file = data_file.readlines()
+            DISPLAY ("\nAccount ID to check: ")
+            READ account
+            LOOP each_line IN data_file
+                each_line = each_line.replace("\n",":").split(":")
+                IF each_line[0] == account AND each_line[2] == "super" THEN
+                    SET checker = 2
+                    BREAK
+                ELSEIF each_line[0] == account THEN
+                    SET checker = 1
+                    BREAK
+                ENDIF
+            ENDLOOP
+        ENDWITH
+        IF checker == 0 THEN
+            DISPLAY ("Sorry, no account found!")
+            CONTINUE
+        ELSEIF checker == 2 THEN
+            DISPLAY ("There are no details IN your super account")
+            CONTINUE
+        ELSE
+            IF each_line[2] == "admin" THEN
+                DISPLAY ("=" * 26)
+                DISPLAY ('     Account Details\n\nName         : ' + each_line[3] + '\nEmail Address: ' + each_line[4] + '\nAddress      : ' + each_line[5] +
+                         '\nPhone Number : ' + each_line[6])
+                DISPLAY ("=" * 26)
+            ELSEIF each_line[2] == "customer" THEN
+                DISPLAY ("=" * 26)
+                DISPLAY ('     Account Details\n\nName         : ' + each_line[4] + '\nEmail Address: ' + each_line[5] + '\nAddress      : ' + each_line[6] +
+                         '\nPhone Number : ' + each_line[7] + '\nType Account : ' + each_line[3])
+                DISPLAY ("=" * 28)
+            ENDIF
+        ENDIF
+        DISPLAY ("Type anything to continue")
+        READ next_option
+        IF next_option != None THEN
+            BREAK
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE create_account(type_of_an_account)
+    DECLARE (string: type_of_an_account, acc_type, acc_id, acc_def_pass, acc_name, acc_email_address, acc_address, acc_phone, acc_type_cos)
+    WITH OPEN "AccountData.txt" with append mode as create_new_acc
+        IF type_of_an_account == "super" THEN
+            SET acc_type = "admin"
+            acc_id, acc_def_pass, acc_name, acc_email_address, acc_address, acc_phone = id_pass_giving(type_of_an_account)
+            APPEND (acc_id + ":" + acc_def_pass + ":" + acc_type + ":" + acc_name + ":" + acc_email_address + ":" + acc_address + ":" +
+                    acc_phone + "\n") to create_new_acc
+        ELSEIF type_of_an_account == "admin" THEN
+            SET acc_type = "customer"
+            acc_id, acc_def_pass, acc_name, acc_email_address, acc_address, acc_phone, acc_type_cos = id_pass_giving(type_of_an_account)
+            IF acc_type_cos == "saving":
+                APPEND (acc_id + ":" + acc_def_pass + ":" + acc_type + ":" + acc_type_cos + ":" + acc_name + ":" + acc_email_address + ":" +
+                        acc_address + ":" + acc_phone + ":" + "100.0\n") to create_new_acc
+            ELSEIF acc_type_cos == "current":
+                APPEND (acc_id + ":" + acc_def_pass + ":" + acc_type + ":" + acc_type_cos + ":" + acc_name + ":" + acc_email_address + ":" +
+                        acc_address + ":" + acc_phone + ":" + "500.0\n") to create_new_acc
+            ENDIF
+        ENDIF
+        DISPLAY ("\n   " + ("=" * 22) + "\n   ***Account created!***\n   " + ("=" * 22))
+    ENDWITH
+ENDDEFINE
+
+DEFINE id_pass_giving(type_of_account)
+    DECLARE (string: acc_data, first_element, new_id, default_password, acc_name, acc_email_address, acc_address, acc_phone_num, acc_type)
+            (integer: last_line) (list: acc_per_line, acc_per_line_filter, splitter)
+    WITH OPEN "AccountData.txt" with read mode as file
+        acc_data = file.readline()
+        last_line = len(acc_data) - 1
+        splitter = acc_data[last_line].split(":")
+        first_element = splitter[0]
+        new_id = "ABC" + str(int(first_element[3:]) + 1).zfill(4)
+        default_password = str(int(first_element[3:]) + 1).zfill(6)
+        IF type_of_account == "super" THEN
+            acc_name, acc_email_address, acc_address, acc_phone_num = super_create_admin_menu(new_id, default_password)
+            RETURN new_id, default_password, acc_name, acc_email_address, acc_address, acc_phone_num
+        ELSEIF type_of_account == "admin" THEN
+            acc_name, acc_email_address, acc_address, acc_phone_num, acc_type = admin_create_customer_menu(new_id, default_password)
+            RETURN new_id, default_password, acc_name, acc_email_address, acc_address, acc_phone_num, acc_type
+        ENDIF
+    ENDWITH
+ENDDEFINE
+
+DEFINE super_create_admin_menu(new_id, default_password)
+    DECLARE (string: acc_name, acc_email_address, acc_address, acc_phone_num, answer_from_user)
+            (integer: name_checker, email_checker, address_checker, phone_num_checker)
+    WHILE True
+        DISPLAY ("\n" + (" " * 2)+ "Admin Account Registration Form")
+        DISPLAY ("=" * 26)
+        DISPLAY ("Name: ")
+        READ acc_name
+        acc_name = acc_name.strip()
+        name_checker = acc_name_checker(acc_name)
+        IF name_checker == 1 OR name_checker == 2 THEN
+            CONTINUE
+        ELSE
+            PASS
+        ENDIF
+
+        DISPLAY ("Email Address: ")
+        READ acc_email_address
+        acc_email_address = acc_email_address.strip()
+        email_checker = acc_email_address_checker(acc_email_address)
+        IF email_checker == 1 THEN
+            CONTINUE
+        ELSE
+            PASS
+        ENDIF
+
+        DISPLAY ("Address: ")
+        READ acc_address
+        acc_address = acc_address.strip()
+        address_checker = acc_address_checker(acc_address)
+        IF address_checker == 1 THEN
+            CONTINUE
+        ELSE
+            PASS
+        ENDIF
+
+        DISPLAY ("Phone Number: ")
+        READ acc_phone_num
+        acc_phone_num = acc_phone_num.strip()
+        phone_num_checker = acc_phone_num_checker(acc_phone_num)
+        IF phone_num_checker == 1 THEN
+            PASS
+        ELSE
+            CONTINUE
+        ENDIF
+
+        DISPLAY (("=" * 26) + "\n\n" + ("=" * 26))
+        DISPLAY ("Admin account details:\n")
+        DISPLAY ('Name: ' + acc_name + '\nEmail Address: ' + acc_email_address + '\nAddress: ' + acc_address + '\nPhone Number: ' + acc_phone_num)
+        DISPLAY ("\n" + "   ***Given by MyBank***")
+        DISPLAY ('Admin ID: ' + new_id + '\nDefault password: ' + default_password)
+        DISPLAY ("=" * 26)
+        answer_from_user = confirmation()
+        IF answer_from_user == "register" THEN
+            RETURN acc_name, acc_email_address, acc_address, acc_phone_num
+        ELSEIF answer_from_user == "re-register" THEN
+            PASS
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE acc_name_checker(data)
+    DECLARE (string: data, each_character, data_character) (integer: checker) (list: letter)
+    SET checker = 0
+    letter = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ '
+    LOOP data_character IN data
+          IF data_character IN letter THEN
+              CONTINUE
+          ELSE
+              SET checker = 1
+              BREAK
+          ENDIF
+        ENDLOOP
+    ENDLOOP
+    IF checker == 1 THEN
+        DISPLAY ("Sorry, only letters are allowed!")
+    ELSEIF data == "" OR data == " " THEN
+        DISPLAY ("You should not leave it empty!")
+        SET checker = 2
+    ELSE
+        PASS
+    ENDIF
+    RETURN checker
+ENDDEFINE
+
+DEFINE acc_email_address_checker(data)
+    DECLARE (string: data_character, data) (integer: checker1, checker2, final_checker) (boolean: instant_no)
+    SET checker1 = 0
+    SET checker2 = 0
+    SET instant_no = False
+    LOOP data_character IN data
+        IF data_character == "@" THEN
+            checker1 += 1
+        ELSEIF data_character == "." THEN
+            SET checker2 = 1
+        ELSEIF data_character == " " THEN
+            SET instant_no = True
+        ELSE
+            PASS
+        ENDIF
+    ENDLOOP
+    IF instant_no == True THEN
+        DISPLAY ("Sorry, no whitespaces allowed!")
+        SET final_checker = 1
+    ELSEIF checker1 == 1 AND checker2 == 1 THEN
+        SET final_checker = 0
+    ELSE
+        DISPLAY ("Please write the email address carefully!")
+        SET final_checker = 1
+    ENDIF
+    RETURN final_checker
+ENDDEFINE
+
+DEFINE acc_address_checker(data)
+    DECLARE (string: data) (integer: checker)
+    SET checker = 0
+    IF data == "" OR data == " " THEN
+        SET checker = 1
+    ELSE
+        PASS
+    ENDIF
+    IF checker == 1 THEN
+        DISPLAY ("You should not leave it empty!")
+    ELSE
+        PASS
+    ENDIF
+    RETURN checker
+ENDDEFINE
+
+DEFINE acc_phone_num_checker(data)
+    DECLARE (string: data, digit) (integer: checker)
+    digit = '1234567890'
+    SET checker = 0
+    TRY
+        IF (data[0] IN digit OR data[0] == "+") AND data[1:].isdigit() THEN
+            SET checker = 1
+        ELSE
+            PASS
+        ENDIF
+    ENDTRY
+    EXCEPT
+        PASS
+    ENDEXCEPT
+    IF checker == 1 THEN
+        PASS
+    ELSE
+        DISPLAY ("Sorry, please write IN this format (+xxxxxxxxxx)")
+    ENDIF
+    RETURN checker
+ENDDEFINE
+
+DEFINE acc_card_type_checker(data)
+    DECLARE (string: data, acc_type) (integer: checker)
+    SET checker = 0
+    SET acc_type = ""
+    IF data == "s" THEN
+        SET acc_type = "saving"
+        SET checker = 1
+    ELSEIF data == "c" THEN
+        SET acc_type = "current"
+        SET checker = 1
+    ELSE
+        DISPLAY (("=" * 26) + "\nPlease choose only between c / s!\nc LOOP current account\ns LOOP saving account")
+    ENDIF
+    RETURN checker, acc_type
+ENDDEFINE
+
+DEFINE admin_create_customer_menu(new_id, default_password)
+    DECLARE (string: new_id, default_password, acc_name, acc_email_address, acc_address, acc_phone_num, acc_card_type, acc_type, answer_from_user)
+            (integer: name_checker, email_checker, address_checker, phone_num_checker, card_type_checker)
+    WHILE True
+        WHILE True
+            DISPLAY ("\n" + (" " * 2)+ "Customer Account Registration Form")
+            DISPLAY ("=" * 26)
+
+            DISPLAY ("Name: ")
+            READ acc_name
+            acc_name = acc_name.strip()
+            name_checker = acc_name_checker(acc_name)
+            IF name_checker == 1 OR name_checker == 2 THEN
+                CONTINUE
+            ELSE
+                PASS
+            ENDIF
+
+            DISPLAY ("Email Address: ")
+            READ acc_email_address
+            acc_email_address = acc_email_address.strip()
+            email_checker = acc_email_address_checker(acc_email_address)
+            IF email_checker == 1 THEN
+                CONTINUE
+            ELSE
+                PASS
+            ENDIF
+
+            DISPLAY ("Address: ")
+            READ acc_address
+            acc_address = acc_address.strip()
+            address_checker = acc_address_checker(acc_address)
+            IF address_checker == 1 THEN
+                CONTINUE
+            ELSE
+                PASS
+            ENDIF
+
+            DISPLAY ("Phone Number: ")
+            READ acc_phone_num
+            acc_phone_num = acc_phone_num.strip()
+            phone_num_checker = acc_phone_num_checker(acc_phone_num)
+            IF phone_num_checker == 1 THEN
+                PASS
+            ELSE
+                CONTINUE
+            ENDIF
+
+            DISPLAY ("Account type (s/c): ")
+            READ acc_card_type
+            acc_card_type = acc_card_type.strip()
+            card_type_checker, acc_type = acc_card_type_checker(acc_card_type)
+            IF card_type_checker == 1 THEN
+                BREAK
+            ELSE
+                CONTINUE
+            ENDIF
+        ENDWHILE
+
+        DISPLAY (("=" * 26) + "\n\n" + ("=" * 26))
+        DISPLAY ("Admin account details:\n")
+        DISPLAY ('Name: ' + acc_name + '\nEmail Address: ' + acc_email_address + '\nAddress: ' + acc_address + '\nPhone Number: ' + acc_phone_num +
+                 '\nAccount Type: ' + acc_type + ' account')
+        DISPLAY ("\n" + "   ***Given by MyBank***")
+        DISPLAY ('Admin ID: ' + new_id + '\nDefault password: ' + default_password)
+        DISPLAY ("=" * 26)
+        answer_from_user = confirmation()
+        IF answer_from_user == "register" THEN
+            RETURN acc_name, acc_email_address, acc_address, acc_phone_num, acc_type
+        ELSEIF answer_from_user == "re-register" THEN
+            PASS
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE confirmation()
+    DECLARE (string: user_choice)
+    WHILE True
+        DISPLAY ("Please check the account detail\nis everything fine?")
+        DISPLAY ("1. Yes, please register this account")
+        DISPLAY ("2. No, I want to re-register")
+        DISPLAY ("\nSelect your option (1-2): ")
+        READ user_choice
+        IF user_choice == "1" THEN
+            RETURN "register"
+        ELSEIF user_choice == "2" THEN
+            RETURN "re-register"
+        ELSE
+            DISPLAY ("\nSorry, we dont have that option")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE admin_function(type, id_admin)
+    DECLARE (string: type, id_admin)
+    WHILE True
+        CALL admin_acc_menu()
+        DISPLAY ("Select your option (1-4): ")
+        READ user_choice
+        IF user_choice == "1" THEN
+            CALL create_account(type)
+        ELSEIF user_choice == "2" THEN
+            CALL edit_customer_account(id_admin)
+        ELSEIF user_choice == "3" THEN
+            CALL showing_customer_report()
+        ELSEIF user_choice == "4" THEN
+            CALL change_admin_password(id_admin)
+        ELSEIF user_choice == "5" THEN
+            DISPLAY ("\n*Thankyou for your visit*")
+            BREAK
+        ELSE
+            DISPLAY ("\nSorry, we dont have that option")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE change_admin_password(id)
+    DECLARE (string: id, old_password, new_password, confirm_password)
+            (integer: index_of_line) (list: data_location, data_file)
+    DISPLAY("\n" + "=" * 26)
+    WHILE True
+        data_location, index_of_line = admin_checker_updater(id)
+        old_password = data_location[1]
+        DISPLAY ("New password: ")
+        READ new_password
+        new_password = new_password.strip()
+        IF new_password == "" OR new_password == " " THEN
+            DISPLAY ("You should not leave it empty!\n")
+            CONTINUE
+        ELSE
+            DISPLAY ("Confirm password: ")
+            READ confirm_password
+            confirm_password = confirm_password.strip()
+        ENDIF
+        IF new_password == confirm_password THEN
+            PASS
+        ELSE
+            DISPLAY ("Sorry, try again\n")
+            CONTINUE
+        ENDIF
+        WITH OPEN "AccountData.txt" with read mode as data_file
+            data_file = data_file.readlines()
+            data_file[index_of_line] = data_location[0] + ":" + confirm_password + ":" + data_location[2] + ":" + data_location[3] + ":" + data_location[4] + ":" +
+                                        data_location[5] + ":" + data_location[6] + "\n"
+        ENDWITH
+        WITH OPEN "AccountData.txt" with write mode as data_write
+            WRITE data_file to data_write
+        ENDWITH
+        DISPLAY ("\n" + "  ***Password Changed!***")
+        BREAK
+    ENDWHILE
+ENDDEFINE
+
+DEFINE admin_acc_menu()
+    DISPLAY ("\n" + (" " * 8) + "Admin Menu")
+    DISPLAY ("=" * 26)
+    DISPLAY ("1. Create Customer Account")
+    DISPLAY ("2. Edit Customer's Account Detail")
+    DISPLAY ("3. Customer's Account Report")
+    DISPLAY ("4. Change Password")
+    DISPLAY ("5. Exit")
+    DISPLAY ("=" * 26)
+    DISPLAY ("What do you want to do?")
+ENDDEFINE
+
+DEFINE showing_customer_report()
+    DECLARE (string: id, admin_choice, user_input, each_data) (integer: checker)
+            (list: data_change_record, each_line)
+    id = account_checker_to_edit()
+    DISPLAY ("\n" + "=" * 26 + "\n" + "1. Show Customer's Balance Record\n2. Show Customer's Changed Data Record\n3. Exit\n" + "=" * 26)
+    WHILE True
+        DISPLAY ("What would you like to do? (1-3): ")
+        READ admin_choice
+        IF admin_choice == "1" THEN
+            CALL customer_report_option(id)
+            DISPLAY ("\n" + "=" * 26 + "\n" + "1. Show Customer's Balance Record\n2. Show Customer's Changed Data Record\n3. Exit\n" + "=" * 26)
+        ELSEIF admin_choice == "2" THEN
+            SET checker = 0
+            WITH OPEN "AccountDataChangeRecord.txt" with read mode as data_change_record
+                data_change_record = data_change_record.readlines()
+                DISPLAY ("\n" + "=" * 26)
+                LOOP each_line IN data_change_record
+                    each_line = each_line.split(";")
+                    IF each_line[0] == id THEN
+                        DISPLAY (each_line[1], end='')
+                        SET checker = 1
+                    ENDIF
+                ENDLOOP
+                IF checker == 0 THEN
+                    DISPLAY ("No record found!")
+                ENDIF
+                DISPLAY ("=" * 26)
+                DISPLAY ("Type anything to continue: ")
+                READ ()
+                DISPLAY ("\n" + "=" * 26 + "\n" + "1. Show Customer's Balance Record\n2. Show Customer's Changed Data Record\n3. Exit\n" + "=" * 26)
+            ENDWITH
+        ELSEIF admin_choice == "3" THEN
+            BREAK
+        ELSE
+            DISPLAY ("\nSorry, we dont have that option")
+            CONTINUE
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE edit_customer_account(id_admin)
+    DECLARE (string: id, answer, id_admin) (integer: index_of_line) (list: data_location)
+    id = account_checker_to_edit()
+    WHILE True
+        data_location, index_of_line = account_checker_updater(id)
+        DISPLAY ("\n" + (" " * 2) + "Edit Customer Account")
+        DISPLAY ("=" * 26)
+        DISPLAY (" Customer account details\n")
+        DISPLAY ('1. Name: ' + data_location[4] + '\n2. Email Address: ' + data_location[5] + '\n3. Address: ' + data_location[6] + '\n4. Phone Number: '
+                  + data_location[7] + '\n5. Account Type: ' + data_location[3] + ' account\n6. Password: ' + data_location[1] + '\n\n7. Exit editing customer menu')
+        DISPLAY ("=" * 26)
+        answer = edit_customer_account_option_checker()
+        IF answer != "exit" THEN
+            CALL change_data(data_location, index_of_line, answer, id_admin, id)
+            DISPLAY (("\n" + "=" * 26) + "\n   **account updated!**\n" + ("=" * 26))
+        ELSE
+            BREAK
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE change_data(data_location, index_of_line, answer, id_admin, id_customer_to_change)
+    DECLARE (string: answer, id_admin, id_customer_to_change, data_changed)
+            (integer: index_of_line, checker) (list: data_location, old_data, list_of_lines)
+    WITH OPEN "AccountData.txt" with read mode as data_file
+        list_of_lines = data_file.readlines()
+        WHILE True
+            old_data = data_location
+            IF answer == "type account" THEN
+                DISPLAY ("New account type (c/s): ")
+                READ data_changed
+                data_changed = data_changed.strip()
+                IF data_changed == "c" THEN
+                    SET data_changed = "current"
+                    list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_changed + ':' + data_location[4] +
+                                                   ':' + data_location[5] + ':' + data_location[6] + ':' + data_location[7] + ':' + data_location[8] + '\n'
+                    BREAK
+                ELSEIF data_changed == "s" THEN
+                    SET data_changed = "saving"
+                    list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_changed + ':' + data_location[4] +
+                                                   ':' + data_location[5] + ':' + data_location[6] + ':' + data_location[7] + ':' + data_location[8] + '\n'
+                    BREAK
+                ELSE
+                    DISPLAY ("\nPlease choose only between c / s!\nc for current account\ns for saving account\n")
+                    CONTINUE
+                ENDIF
+            ELSE
+                DISPLAY ("New data: ")
+                READ data_changed
+                data_changed = data_changed.strip()
+                IF answer == "email" THEN
+                    checker = acc_email_address_checker(data_changed)
+                    IF checker == 1 THEN
+                        DISPLAY new line
+                        CONTINUE
+                    ELSE
+                        list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                                       ':' + data_changed + ':' + data_location[6] + ':' + data_location[7] + ':' + data_location[8] + '\n'
+                        BREAK
+                    ENDIF
+                ELSEIF answer == "address" THEN
+                    checker = acc_address_checker(data_changed)
+                    IF checker == 1 THEN
+                        DISPLAY new line
+                        CONTINUE
+                    ELSE
+                        list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                                       ':' + data_location[5] + ':' + data_changed + ':' + data_location[7] + ':' + data_location[8] + '\n'
+                        BREAK
+                    ENDIF
+                ELSEIF answer == "phone number" THEN
+                    checker = acc_phone_num_checker(data_changed)
+                    IF checker == 1 THEN
+                        list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                                       ':' + data_location[5] + ':' + data_location[6] + ':' + data_changed + ':' + data_location[8] + '\n'
+                        BREAK
+                    ELSE:
+                        DISPLAY new line
+                        CONTINUE
+                    ENDIF
+                ELSEIF answer == "password" THEN
+                    IF data_changed == "" OR data_changed == " " THEN
+                        DISPLAY( "You should not leave it empty!\n")
+                    ELSE
+                        list_of_lines[index_of_line] = data_location[0] + ':' + data_changed + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                                       ':' + data_location[5] + ':' + data_location[6] + ':' + data_location[7] + ':' + data_location[8] + '\n'
+                        BREAK
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDWHILE
+        WITH OPEN "AccountData.txt" with write mode as f
+            WRITE list_of_lines to f
+        ENDWITH
+        CALL write_data_change_record(id_admin, answer, data_changed, old_data, id_customer_to_change)
+    ENDWITH
+ENDDEFINE
+
+DEFINE write_data_change_record(id_of_user, kind_of_data, new_data, old_data, id_customer)
+    DECLARE (string: date, id_of_user, kind_of_data, new_data, id_customer) (list: old_data)
+    date = datetime_checker()
+    WITH OPEN 'AccountDataChangeRecord.txt' with append mode as user_data_file
+        IF kind_of_data == "type account" AND new_data == "saving" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from current account to saving account " + date + "\n") to user_data_file
+        ELSEIF kind_of_data == "type account" AND new_data == "current" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from saving account to current account " + date + "\n") to user_data_file
+        ELSEIF kind_of_data == "email" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from " + old_data[5] + " to " + new_data + date + "\n") to user_data_file
+        ELSEIF kind_of_data == "address" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from " + old_data[5] + " to " + new_data + date + "\n") to user_data_file
+        ELSEIF kind_of_data == "phone number" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from " + old_data[5] + " to " + new_data + date + "\n") to user_data_file
+        ELSEIF kind_of_data == "password" THEN
+            WRITE (id_customer + ";ADMIN (" + id_of_user + "), change " + kind_of_data + "from " + old_data[5] + " to " + new_data + date + "\n") to user_data_file
+        ENDIF
+    ENDWITH
+ENDDEFINE
+
+DEFINE datetime_checker()
+    DECLARE (string: now_date)
+    IMPORT datetime as find_date
+    now_date = find_date.datetime.now()
+    now_date = now_date.strftime('on %Y-%m-%d at %H:%M:%S')
+    RETURN now_date
+ENDDEFINE
+
+DEFINE account_checker_to_edit()
+    DECLARE (string: id, line) (integer: checker) (list: acc_datas, acc_line)
+    WHILE True
+        WITH OPEN "AccountData.txt" with read mode as account_list
+            acc_datas = account_list.readlines()
+            DISPLAY ("\nInput customer account id: ")
+            READ id
+            SET checker = 0
+            LOOP line IN acc_datas
+                acc_line = line.replace("\n",":").split(":")
+                IF id == acc_line[0] AND acc_line[2] == "customer" THEN
+                    SET checker = 1
+                    BREAK
+                ELSEIF id == acc_line[0] AND acc_line[2] != "customer" THEN
+                    SET checker = 2
+                ELSE
+                    PASS
+                ENDIF
+            ENDLOOP
+            IF checker == 1 THEN
+                RETURN id
+            ELSEIF checker == 2 THEN
+                DISPLAY ("\nYou INPUT a not customer ID, only allowed to edit customer account.")
+            ELSE
+                DISPLAY ("\nAccount's ID not found.")
+            ENDIF
+        ENDWITH
+    ENDWHILE
+ENDDEFINE
+
+DEFINE account_checker_updater(id)
+    DECLARE (string: id, line) (integer: index_line) (list: acc_datas, acc_line, data_line_location)
+    WITH OPEN "AccountData.txt" with read mode as account_list
+        acc_datas = account_list.readlines()
+        SET index_line = -1
+        LOOP line IN acc_datas
+            acc_line = line.replace("\n",":").split(":")
+            index_line += 1
+            IF id == acc_line[0] AND acc_line[2] == "customer" THEN
+                data_line_location = acc_line
+                RETURN data_line_location, index_line
+            ENDIF
+        ENDLOOP
+    ENDWITH
+ENDDEFINE
+
+DEFINE edit_customer_account_option_checker()
+    DECLARE (string: choice, answer)
+    WHILE True
+        DISPLAY ("Which one would you like to edit? (2-7): ")
+        READ choice
+        IF choice == "1" THEN
+            DISPLAY("\nSorry, but editing name are not allowed!\n")
+            CONTINUE
+        ELSEIF choice == "2" THEN
+            SET answer = "email"
+        ELSEIF choice == "3" THEN
+            SET answer = "address"
+        ELSEIF choice == "4" THEN
+            SET answer = "phone number"
+        ELSEIF choice == "5" THEN
+            SET answer = "type account"
+        ELSEIF choice == "6" THEN
+            SET answer = "password"
+        ELSEIF choice == "7" THEN
+            SET answer = "exit"
+        ELSE
+            DISPLAY("\nSorry, we dont have that option\n")
+            CONTINUE
+        ENDIF
+        RETURN answer
+    ENDWHILE
+ENDDEFINE
+
+DEFINE customer_function(acc_id)
+    DECLARE (string: acc_id, user_choice)
+    WHILE True
+        CALL customer_acc_menu()
+        DISPLAY ("Select your option (1-5): ")
+        READ user_choice
+        IF user_choice == "1" THEN
+            CALL deposit_money(acc_id)
+        ELSEIF user_choice == "2" THEN
+            CALL withdrawal_money(acc_id)
+        ELSEIF user_choice == "3" THEN
+            CALL transfer_money(acc_id)
+        ELSEIF user_choice == "4" THEN
+            CALL printing_customer_balance_report(acc_id)
+        ELSEIF user_choice == "5" THEN
+            CALL customer_report_option(acc_id)
+        ELSEIF user_choice == "6" THEN
+            CALL change_customer_password(acc_id)
+        ELSEIF user_choice == "7" THEN
+            DISPLAY ("\n*Thankyou LOOP your visit*")
+            BREAK
+        ELSE:
+            DISPLAY ("\nSorry, we dont have that option")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE change_customer_password(id)
+    DECLARE (string: id, new_password, confirm_password, old_password) (integer: index_of_line) (list: data_location, data_file)
+    DISPLAY ("\n" + "=" * 26)
+    WHILE True
+        data_location, index_of_line = account_checker_updater(id)
+        old_password = data_location[1]
+        DISPLAY ("New password: ")
+        READ new_password
+        new_password = new_password.strip()
+        IF new_password == "" OR new_password == " " THEN
+            DISPLAY ("You should not leave it empty!\n")
+            CONTINUE
+        ELSE
+            DISPLAY ("Confirm password: ")
+            READ confirm_password
+            confirm_password = confirm_password.strip()
+        ENDIF
+        IF new_password == confirm_password THEN
+            PASS
+        ELSE
+            DISPLAY ("Sorry, try again\n")
+            CONTINUE
+        ENDIF
+        WITH OPEN "AccountData.txt" with read mode as data_file
+            data_file = data_file.readlines()
+            data_file[index_of_line] = data_location[0] + ":" + confirm_password + ":" + data_location[2] + ":" + data_location[3] + ":" + data_location[4] + ":"
+                                       + data_location[5] + ":" + data_location[6] + ":" + data_location[7] + ":" + data_location[8] + "\n"
+        ENDWITH
+        WITH OPEN "AccountData.txt" with write mode as data_write
+            WRITE data_file to data_write
+        ENDWITH
+        CALL write_records(id, old_password, confirm_password)
+        DISPLAY ("\n" + "  ***Password Changed!***")
+        BREAK
+    ENDWHILE
+ENDDEFINE
+
+DEFINE write_records(id, old_password, confirm_password)
+    DECLARE (string: id, old_password, confirm_password, date)
+    date = datetime_checker()
+    WITH OPEN "AccountDataChangeRecord.txt" with append mode as data_file
+        APPEND (id + ";CUSTOMER (" + id + "), change password from " + old_password + " to " + confirm_password + date + "\n") to data_file
+    ENDWITH
+ENDDEFINE
+
+DEFINE customer_report_option(id)
+    DECLARE (string: id, user_choice)
+    DISPLAY ('\n' + "=" * 26)
+    DISPLAY ("1. Print all customer balance report")
+    DISPLAY ("2. Print specific date LOOP customer balance report")
+    DISPLAY ("=" * 26)
+    WHILE True
+        DISPLAY ("Which one do you want to see? (1/2): ")
+        READ user_choice
+        IF user_choice == "1" THEN
+            CALL printing_customer_report_all(id)
+            BREAK
+        ELSEIF user_choice == "2" THEN
+            CALL checking_customer_report_specific(id)
+            BREAK
+        ELSE
+            DISPLAY("Sorry, we dont have that option!\n")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE checking_customer_report_specific(id)
+    DECLARE (string: id, year_start_check, month_start_check, day_start_check, year_end_check, month_end_check, day_end_check)
+            (integer: year_start, month_start, day_start, year_end, month_end, day_end)
+            (boolean: checker) (list: start_date, end_date, month_with_30days, month_with_31days, date)
+    WHILE True
+        DISPLAY ("Start date (yyyy-mm-dd): ")
+        READ start_date
+        DISPLAY ("End date (yyyy-mm-dd): ")
+        READ end_date
+        SET checker = False
+        TRY
+            start_date_list = start_date.split("-")
+            end_date_list = end_date.split("-")
+            year_start = start_date_list[0]
+            month_start = start_date_list[1]
+            day_start = start_date_list[2]
+            year_end = end_date_list[0]
+            month_end = end_date_list[1]
+            day_end = end_date_list[2]
+            CONVERT year_start, month_start, day_start, year_end, month_end, day_end TO integer
+            month_with_31days = [1,3,5,7,8,10,12]
+            month_with_30days = [4,5,9,11]
+            year_start_check = str(year_start).zfill(4)
+            month_start_check = str(month_start).zfill(2)
+            day_start_check = str(day_start).zfill(2)
+            year_end_check = str(year_end).zfill(4)
+            month_end_check = str(month_end).zfill(2)
+            day_end_check = str(day_end).zfill(2)
+            check_start = f'{year_start_check}-{month_start_check}-{day_start_check}'
+            check_end = f'{year_end_check}-{month_end_check}-{day_end_check}'
+            IF check_start >= check_end THEN
+                DISPLAY ("Start date should be lesser than end date")
+                CONTINUE
+            ENDIF
+            IF len(start_date_list) == 3 AND (month_start >= 1 AND month_start <= 12) THEN
+                IF month_start IN month_with_30days AND (day_start >= 1 AND day_start <= 30) THEN
+                    SET checker = True
+                ELSEIF month_start IN month_with_31days AND (day_start >= 1 AND day_start <= 31) THEN
+                    SET checker = True
+                ELSEIF month_start == 2 AND (year_start % 4 == 0 AND year_start % 100 != 0) AND (day_start >= 1 AND day_start <= 29) THEN
+                    SET checker = True
+                ELSEIF month_start == 2 AND (year_start % 4 == 0 AND year_start % 400 == 0) AND (day_start >= 1 AND day_start <= 29) THEN
+                    SET checker = True
+                ELSEIF month_start == 2 AND (day_start >= 1 AND day_start <= 28) THEN
+                    SET checker = True
+                ELSE
+                    x = 1/0
+                ENDIF
+                IF checker == True AND (len(end_date_list) == 3 AND (month_end >= 1 AND month_end <= 12)) THEN
+                    IF month_end IN month_with_30days AND (day_end >= 1 AND day_end <= 30) THEN
+                        PASS
+                    ELSEIF month_end IN month_with_31days AND (day_end >= 1 AND day_end <= 31) THEN
+                        PASS
+                    ELSEIF month_end == 2 AND (year_end % 4 == 0 AND year_end % 100 != 0) AND (day_end >= 1 AND day_end <= 29) THEN
+                        PASS
+                    ELSEIF month_end == 2 AND (year_end % 4 == 0 AND year_end % 400 == 0) AND (day_end >= 1 AND day_end <= 29) THEN
+                        PASS
+                    ELSEIF month_end == 2 AND (day_end >= 1 AND day_end <= 28) THEN
+                        PASS
+                    ELSE
+                        x = 1/0
+                    ENDIF
+                ELSE
+                    x = 1/0
+                ENDIF
+            ELSE
+                x = 1/0
+            ENDIF
+        ENDTRY
+        EXCEPT
+            DISPLAY ("Sorry, but the requirement format are not fulfilled")
+            CONTINUE
+        ENDEXCEPT
+        date = year_start, month_start, day_start, year_end, month_end, day_end
+        date = list(date)
+        CALL printing_customer_report_specific(id, date)
+        BREAK
+    ENDWHILE
+ENDDEFINE
+
+DEFINE printing_customer_report_specific(id, date)
+    DECLARE (string: id, show_record, each_line, year_start, month_start, day_start, year_end, month_end, day_end)
+            (integer: check) (list: date, the_date, the_record)
+    WITH OPEN "AccountBalanceRecord.txt" with read mode as record_file
+        record_file = record_file.readlines()
+        year_start = date[0]
+        month_start = date[1]
+        day_start = date[2]
+        year_end = date[3]
+        month_end = date[4]
+        day_end = date[5]
+        CONVERT year_start, month_start, day_start, year_end, month_end, day_end TO string
+        year_start = year_start.zfill(4)
+        month_start = month_start.zfill(2)
+        day_start = day_start.zfill(2)
+        year_end = year_end.zfill(4)
+        month_end = month_end.zfill(2)
+        day_end = day_end.zfill(2)
+        user_date_start = f'{year_start}-{month_start}-{day_start}'
+        user_date_end = f'{year_end}-{month_end}-{day_end}'
+        SET check = 0
+        DISPLAY ("\n" + "=" * 26)
+        LOOP each_line IN record_file
+            the_date = each_line.split()
+            the_record = each_line.split(";")
+            show_record = the_record[1]
+            IF the_record[0] == id THEN
+                IF the_date[1] == "DEPOSIT" OR the_date[1] == "WITHDRAW" THEN
+                    date_of_data = the_date[11]
+                ELSEIF the_date[1] == "TRANSFER" THEN
+                    date_of_data = the_date[13]
+                ENDIF
+                IF user_date_start <= date_of_data AND user_date_end >= date_of_data THEN
+                    DISPLAY (show_record, end="")
+                    SET check = 1
+                ENDIF
+            ELSE
+                CONTINUE
+            ENDIF
+        ENDLOOP
+        IF check == 0 THEN
+            DISPLAY ("No record found!")
+        ENDIF
+        DISPLAY ("=" * 26)
+        DISPLAY ("Type anything to continue: ")
+        READ ()
+        ENDIF
+    ENDWITH
+ENDDEFINE
+
+DEFINE printing_customer_report_all(id)
+    DECLARE (string: id, user_input) (integer: checker) (list: data_report, each_line)
+    SET checker = 0
+    WITH OPEN "AccountBalanceRecord.txt" with read mode as data_report
+        data_report = data_report.readlines()
+        DISPLAY ("\n" + "=" * 26)
+        LOOP each_line IN data_report
+            each_line = each_line.split(";")
+            IF each_line[0] == id THEN
+                DISPLAY (each_line[1], end='') 
+                SET checker = 1
+            ENDIF
+        ENDLOOP
+        IF checker == 0 THEN
+            DISPLAY("No record found!")
+        ENDIF
+        DISPLAY ("=" * 26)
+        DISPLAY ("Type anything to continue: ")
+        READ ()
+        ENDIF
+    ENDWITH
+ENDDEFINE
+
+DEFINE transfer_money(giver_id)
+    DECLARE (string: giver_id)
+            (list: account_list, data_location_giver, index_of_line_giver, data_location_receiver index_of_line_receiver, transfer_destination)
+    WITH OPEN "AccountData.txt" with read mode as account_data
+        account_list = account_data.readlines()
+        data_location_giver, index_of_line_giver = account_checker_updater(giver_id)
+        transfer_destination = transfered_acc_checker(account_list, giver_id)
+        data_location_receiver, index_of_line_receiver = account_checker_updater(transfer_destination)
+        CALL perform_transfer_and_balance_checker(data_location_giver, data_location_receiver, index_of_line_giver, index_of_line_receiver)
+        DISPLAY ("\n" + ("=" * 26) + "\n    transfer success!\n" + ("=" * 26))
+    ENDWITH
+ENDDEFINE
+
+DEFINE perform_transfer_and_balance_checker(data_of_giver, data_of_receiver, index_of_line_giver, index_of_line_receiver)
+    DECLARE (float: total_transfer, now_currency_giver_acc, now_currency_receiver_acc, balance_update_giver_acc, balance_update_receiver_acc)
+            (list: list_of_lines, data_of_giver, data_of_receiver) (integer: index_of_line_giver, index_of_line_receiver)
+    WHILE True
+        now_currency_giver_acc = float(data_of_giver[8])
+        now_currency_receiver_acc = float(data_of_receiver[8])
+        IF now_currency_giver_acc >= 100.0 AND data_of_giver[3] == "saving" THEN
+            PASS
+        ELSEIF now_currency_giver_acc >= 500.0 AND data_of_giver[3] == "current" THEN
+            PASS
+        ELSE
+            DISPLAY ("\nSorry, your minimal balance requirement are not fulfilled")
+            RETURN
+        ENDIF
+        WHILE True
+            DISPLAY ("How many would you like to transfer? (x.xx): ")
+            READ total_transfer
+            TRY
+                CONVERT total_transfer TO float
+                BREAK
+            ENDTRY
+            EXCEPT
+                DISPLAY ("\nYou are suppose to fill it WITH numbers")
+            ENDEXCEPT
+        ENDWHILE
+        IF total_transfer < 0.0 THEN
+            DISPLAY ("\nYou can't transfer WITH negative numbers.")
+            CONTINUE
+        ELSEIF total_transfer == 0.0 THEN
+            DISPLAY ("\nYou can't transfer 0 amount of money.")
+            CONTINUE
+        ENDIF
+
+        balance_update_giver_acc = now_currency_giver_acc - total_transfer
+        balance_update_receiver_acc = now_currency_receiver_acc + total_transfer
+        WITH OPEN "AccountData.txt" with read mode as account_file
+            list_of_lines = account_file.readlines()
+            IF (data_of_giver[3] == "saving" AND now_currency_giver_acc > 100.0) AND balance_update_giver_acc >= 100.0 THEN
+                list_of_lines[index_of_line_giver] = data_of_giver[0] + ':' + data_of_giver[1] + ':' + data_of_giver[2] + ':' + data_of_giver[3]} + ':' + data_of_giver[4] +
+                                                     ':' + data_of_giver[5] + ':' + data_of_giver[6] + ':' + data_of_giver[7] + ':' + balance_update_giver_acc + '\n'
+                list_of_lines[index_of_line_receiver] = data_of_giver[0] + ':' + data_of_giver[1] + ':' + data_of_giver[2] + ':' + data_of_giver[3]} + ':' + data_of_giver[4] +
+                                                        ':' + data_of_giver[5] + ':' + data_of_giver[6] + ':' + data_of_giver[7] + ':' + balance_update_giver_acc + '\n'
+                BREAK
+            ELSEIF (data_of_giver[3] == "current" AND now_currency_giver_acc > 500.0) AND balance_update_giver_acc >= 500.0 THEN
+                list_of_lines[index_of_line_giver] = data_of_giver[0] + ':' + data_of_giver[1] + ':' + data_of_giver[2] + ':' + data_of_giver[3]} + ':' + data_of_giver[4] +
+                                                     ':' + data_of_giver[5] + ':' + data_of_giver[6] + ':' + data_of_giver[7] + ':' + balance_update_giver_acc + '\n'
+                list_of_lines[index_of_line_receiver] = data_of_giver[0] + ':' + data_of_giver[1] + ':' + data_of_giver[2] + ':' + data_of_giver[3]} + ':' + data_of_giver[4] +
+                                                        ':' + data_of_giver[5] + ':' + data_of_giver[6] + ':' + data_of_giver[7] + ':' + balance_update_giver_acc + '\n'
+                BREAK
+            ELSE
+                DISPLAY ("\nSorry, but you are not allowed transfer any money, \nsince your requirement to transfer not met.")
+                CONTINUE
+            ENDIF
+        ENDWITH
+    ENDWHILE
+    WITH OPEN "AccountData.txt" with write mode as account_file_write
+        WRITE list_of_lines into account_file_write
+    ENDWITH
+    CALL write_balance_record_transfer(total_transfer, now_currency_giver_acc, now_currency_receiver_acc, balance_update_giver_acc,
+                                       balance_update_receiver_acc, data_of_giver, data_of_receiver)
+ENDDEFINE
+
+DEFINE write_balance_record_transfer(total, last_balance_of_giver, last_balance_of_receiver, new_balance_of_giver, new_balance_of_receiver, data_of_giver, data_of_receiver)
+    DECLARE (float: total, last_balance_of_giver, last_balance_of_receiver, new_balance_of_giver, new_balance_of_receiver) (list: data_of_giver, data_of_receiver)
+    date = datetime_checker()
+    acc_giver = data_of_giver[0]
+    acc_receiver = data_of_receiver[0]
+    WITH OPEN "AccountBalanceRecord.txt" with append mode as user_data_file
+        WRITE (acc_giver + ';total TRANSFER of RM' + total + ' to ' + acc_receiver + ', balance updated from ' + last_balance_of_giver + ' to ' +
+               new_balance_of_giver + date '\n') into user_data_file
+        WRITE(acc_receiver + ';total TRANSFER of RM' + total + ' from ' + acc_giver + ', balance updated from ' + last_balance_of_receiver + ' to ' +
+              new_balance_of_receiver + date + '\n') into user_data_file
+    ENDWITH
+ENDDEFINE
+
+DEFINE transfered_acc_checker(account_data_opened, id_of_giver)
+    DECLARE (string: transfer_destination, id_of_giver, line) (integer: checker)
+            (list: account_data_opened, each_line)
+    WHILE True
+        SET checker = 0
+        DISPLAY ("\nto whom would you like to transfer,\nplease enter the account ID: ")
+        READ transfer_destination
+        LOOP line IN account_data_opened
+            each_line = line.replace("/n",":").split(":")
+            IF transfer_destination == id_of_giver THEN
+                SET checker = 3
+            ELSEIF transfer_destination == each_line[0] AND each_line[2] == "customer" THEN
+                SET checker = 1
+                BREAK
+            ELSEIF transfer_destination == each_line[0] AND each_line[2] != "customer" THEN
+                SET checker = 2
+            ELSE
+                PASS
+            ENDIF
+        ENDLOOP
+        IF checker == 1 THEN
+            RETURN transfer_destination
+        ELSEIF checker == 2 THEN
+            DISPLAY ("\nYou INPUT a not customer ID, only allowed to transfer to customer account.")
+        ELSEIF checker == 3 THEN
+            DISPLAY ("\nPlease dont put your own account ID!")
+        ELSE:
+            DISPLAY ("\nAccount's ID not found.")
+        ENDIF
+    ENDWHILE
+ENDDEFINE
+
+DEFINE withdrawal_money(id)
+    DECLARE (string: id, action_type) (integer: index_of_line) (float: total_withdrawal, now_currency, balance_update)
+            (list: data_location, list_of_lines)
+    DISPLAY new line
+    action_type = "withdraw"
+    data_location, index_of_line = account_checker_updater(id)
+    IF data_location[3] == "current" THEN
+        IF float(data_location[8]) > 500 THEN
+            PASS
+        ELSE
+            DISPLAY ("Sorry, you are not allowed to do this transaction,\nsince your require minimal balance not fulfilled")
+            RETURN
+        ENDIF
+    ELSEIF data_location[3] == "saving" THEN
+        IF float(data_location[8]) > 100 THEN
+            PASS
+        ELSE
+            DISPLAY ("Sorry, you are not allowed to do this transaction,\nsince your require minimal balance not fulfilled")
+            RETURN
+        ENDIF
+    ENDIF
+    WHILE True
+        WHILE True
+            DISPLAY ("How many would you like to withdraw? (x.xx): ")
+            READ total_withdrawal
+            TRY
+                CONVERT total_withdrawal TO float
+                BREAK
+            ENDTRY
+            EXCEPT
+                DISPLAY ("\nYou are suppose to fill it WITH numbers")
+            ENDEXCEPT
+        ENDWHILE
+        IF total_withdrawal < 0.0 THEN
+            DISPLAY("\nYou can't withdraw WITH negative numbers.")
+            CONTINUE
+        ELSEIF total_withdrawal == 0.0 THEN
+            DISPLAY("\nYou can't withdraw 0 amount of money.")
+            CONTINUE
+        ENDIF
+        now_currency = float(data_location[8])
+        balance_update = now_currency - total_withdrawal
+        WITH OPEN "AccountData.txt" with read mode as account_file
+            list_of_lines = account_file.readlines()
+            IF (data_location[3] == "saving" AND now_currency > 100.0) AND balance_update >= 100.0 THEN
+                list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                               ':' + data_location[5] + ':' + data_location[6] + ':' + data_location[7] + ':' + balance_update + '\n'
+                BREAK
+            ELSEIF (data_location[3] == "current" AND now_currency > 500.0) AND balance_update >= 500.0 THEN
+                list_of_lines[index_of_line] = data_location[0] + ':' + data_location[1] + ':' + data_location[2] + ':' + data_location[3] + ':' + data_location[4] +
+                                               ':' + data_location[5] + ':' + data_location[6] + ':' + data_location[7] + ':' + balance_update + '\n'
+                BREAK
+            ELSE
+                DISPLAY ("\nSorry, but you are not allowed withdraw with that amount of money, \nif you do, your requirement minimal balance to withdraw will not met.")
+                RETURN
+            ENDIF
+        ENDWITH
+    ENDWHILE
+    WITH OPEN "AccountData.txt" with write mode as account_file_write
+        WRITE list_of_lines into account_file_write
+    ENDWITH
+    DISPLAY ("\n" + ("=" * 26) + "\n   withdrawal success!\n" + ("=" * 26))
+    CALL write_balance_record(total_withdrawal, now_currency, balance_update, id, action_type)
+ENDDEFINE
+
+DEFINE printing_customer_balance_report(id)
+    DECLARE (string: id, data_to_check, user_input) (list: data_record, each_line)
+    WITH OPEN "AccountData.txt" with read mode as data_record
+        data_record = data_record.readlines()
+        LOOP each_line IN data_record
+            each_line = each_line.split(";")
+            IF each_line[0] == id THEN
+                data_to_check = each_line[8]
+                DISPLAY ("\n " + "=" * 23 + "\n Current Balance: RM" + data_to_check + " " + "=" * 23)
+            ENDIF
+        ENDLOOP
+        DISPLAY ("Type anything to continue: ")
+        READ ()
+    ENDWITH
+ENDDEFINE
+
+DEFINE deposit_money(this_user_id)
+    DECLARE (string: this_user_id, action_type) (float: total_deposit, balance_now, updated_balance)
+            (list: list_of_lines, data_location) (integer: index_of_line)
+    DISPLAY new line
+    action_type = "deposit"
+    data_location, index_of_line = account_checker_updater(this_user_id)
+    WHILE True
+        DISPLAY ("How many would you like to deposit? (x.xx): ")
+        READ total_deposit
+        TRY
+            CONVERT total_deposit TO float
+            BREAK
+        ENDTRY
+        EXCEPT
+            DISPLAY ("\nYou are suppose to fill it WITH digits")
+        ENDEXCEPT
+    ENDWHILE
+    balance_now = float(data_location[8])
+    updated_balance = balance_now + total_deposit
+    WITH OPEN "AccountData.txt" with read mode as account_file
+        list_of_lines = account_file.readlines()
+        IF data_location[3] == "saving" OR data_location[3] == "current" THEN
+           list_of_lines[index_of_line] = data_location[0] + ":" + data_location[1] + ":" + data_location[2] + ":" + data_location[3] + ":" + data_location[4] +
+                                          ":" + data_location[5] + ":" + data_location[6] + ":" + data_location[7] + ":" + updated_balance + "\n"
+        ENDIF
+    ENDWITH
+    WITH OPEN "AccountData.txt" with write mode as f
+        WRITE list_of_lines into f
+    ENDWITH
+    DISPLAY (("=" * 26) + "\n     Balance updated!\n" + ("=" * 26))
+    CALL write_balance_record(total_deposit, balance_now, updated_balance, this_user_id, action_type)
+ENDDEFINE
+
+DEFINE write_balance_record(total, last_balance, new_balance, customer_id, perform)
+    DECLARE (float: total, balance_now, last_balance) (string: customer_id, perform) (list: date)
+    date = datetime_checker()
+    WITH OPEN "AccountBalanceRecord.txt" with append mode as user_data_file
+        IF perform == "deposit" THEN
+            WRITE (customer_id + ';total DEPOSIT of RM' + total + ', balance updated from ' + last_balance + ' to ' + new_balance + date + '\n') into user_data_file
+        ELSEIF perform == "withdraw" THEN
+            WRITE (customer_id + ';total DEPOSIT of RM' + total + ', balance updated from ' + last_balance + ' to ' + new_balance + date + '\n') into user_data_file
+        ENDIF
+    ENDWITH
+ENDDEFINE
+
+DEFINE customer_acc_menu()
+    DISPLAY ("\n" + (" " * 6) + "Customer Menu")
+    DISPLAY ("=" * 26)
+    DISPLAY ("1. Deposit")
+    DISPLAY ("2. Withdrawal")
+    DISPLAY ("3. Transfer")
+    DISPLAY ("4. Balance Enquiry")
+    DISPLAY ("5. Account Statement")
+    DISPLAY ("6. Change Password")
+    DISPLAY ("7. Exit")
+    DISPLAY ("=" * 26)
+    DISPLAY ("How can we help you today?")
+ENDDEFINE
+
+BEGIN
+    CALL start_program()
+END

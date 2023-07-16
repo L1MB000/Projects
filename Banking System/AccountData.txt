@@ -1,0 +1,16 @@
+ABC0001:342003:super
+ABC0002:kukuku:admin:Nathannael HolyChristian:Nathan@gmail.com:Balikpapan:08134727384
+ABC0003:000003:admin:Astere Diana Sakura:Pinky99@gmail.com:Balikpapan:082237478283
+ABC0004:000004:admin:Dhiva Delima Putri:DhivaFat@gmail.com:Balikpapan:08128472734
+ABC0005:000005:customer:current:Jontor Manuel:JonMan@gmail.com:Singapore:+618237423:120.0
+ABC0006:lol343:customer:current:Oswald Clay:TheWizardOs@outlook.com:Hills:229937854:1000.0
+ABC0007:000007:customer:saving:Sunset Shuna:SunNotWoman@gmail.com:Australia:1129382423:280.0
+ABC0008:000008:customer:saving:Zephy imao:Zepzepzep@gmail.com:Surabaya:+627839492:100.0
+ABC0009:000009:customer:current:Antini Nio:NioFatty@yahoo.com:Jakarta:+627384823:500.0
+ABC0010:JepForLife:customer:saving:Ma Nem Is Jep:manemisjef@gmail.com:Holywood:+182939482:100.0
+ABC0011:400004:admin:Terminator Que:Imarobot@gmail.com:England:+792384823
+ABC0012:000012:customer:saving:Iven Primei Hensen:Ivanub@gmail.com:Jakarta:+6293928423:400.0
+ABC0013:000013:admin:Nemo Martin:sharkbite@outlook.com:Sydney:+227236423
+ABC0014:000014:customer:current:Dori Ikan:lmaoFish@gmail.com:Sydney:07138248239:700.0
+ABC0015:jett:customer:saving:Emilio Garvin:EmiGer@gmail.com:Tangerang:+621298429:350.0
+ABC0016:000016:customer:current:Theho rseman:lookAtmyHorse@yahoo.com:Greenlake:+72371842:500.0
