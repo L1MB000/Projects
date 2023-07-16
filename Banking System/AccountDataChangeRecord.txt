@@ -1,9 +1,0 @@
-ABC0010;CUSTOMER (ABC0010), change password from 000010 to JepForLife on 2021-12-12 at 20:43:24
-ABC0005;ADMIN (ABC0002), change email from JonTheMan@gmail.com to JonMan@gmail.com on 2021-12-12 at 20:46:18
-ABC0015;ADMIN (ABC0011), change address from Medan to Tangerang on 2021-12-12 at 20:47:09
-ABC0015;CUSTOMER (ABC0015), change password from 000015 to jett on 2021-12-12 at 20:48:40
-ABC0005;ADMIN (ABC0011), change type account from saving account to current account on 2021-12-12 at 20:51:54
-ABC0007;ADMIN (ABC0003), change address from Vietnam to Australia on 2021-12-12 at 20:52:45
-ABC0007;ADMIN (ABC0003), change phone number from 6374823 to 1129382423 on 2021-12-12 at 20:52:50
-ABC0006;CUSTOMER (ABC0006), change password from 000006 to lol343 on 2021-12-12 at 20:54:40
-ABC0012;ADMIN (ABC0002), change address from Tengarong to Jakarta on 2021-12-12 at 20:56:24
